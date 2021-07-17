@@ -18,7 +18,7 @@ Convert your tensorflow model with supported layers and activations into a C hea
 
 # Usage
 
-For a complete example see `/examples/mnist` folder.
+For a complete example see `/examples/mnist` folder. It runs trough all 10000 test images and calculates accuracy metric.
 
 ## Tensorflow model creation
 
