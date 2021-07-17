@@ -10,4 +10,4 @@ clean:
 	rm main
 
 generate_model:
-	python3 ../..//utils/model_export.py ./training/mnist_model mnist_model.h
+	python3 ../../utils/model_export.py ./training/mnist_model mnist_model.h

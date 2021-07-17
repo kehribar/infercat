@@ -47,7 +47,7 @@ int main(int argc, char const *argv[])
     int32_t output_size;
     infercat_iterate(
       img,
-      (InfercatLayer**)(&mnist_model),
+      (InfercatLayer**)(mnist_model),
       mnist_model_LAYERCOUNT,
       &output, &output_size
     );
