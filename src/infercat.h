@@ -22,14 +22,19 @@ typedef enum{
 
 // ----------------------------------------------------------------------------
 typedef struct{
+  void* mem;
+  const InfercatLayerType type;
+}InfercatLayer;
+
+// ----------------------------------------------------------------------------
+typedef struct{
   const float* bias;
   const float* weight;
   float* output_buffer;
   const int32_t input_size;
   const int32_t output_size;
-  const InfercatLayerType type;
   const InfercatLayerActivation activation;
-}InfercatLayer;
+}InfercatLayer_DENSE;
 
 // ----------------------------------------------------------------------------
 void infercat_iterate(

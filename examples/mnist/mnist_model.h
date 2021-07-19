@@ -10,7 +10,7 @@
 #include "infercat.h"
 
 // ...
-static const float dense_weights[50176] = {
+static const float mnist_model_dense_weights[50176] = {
    0.060223885, -0.071508452,  0.028036974,  0.017114066, -0.002998747, 
   -0.006521292, -0.007518195, -0.004334718,  0.018834867, -0.065433443, 
   -0.065260686,  0.045992903, -0.044948757, -0.013966435,  0.011928925, 
@@ -10050,7 +10050,7 @@ static const float dense_weights[50176] = {
 };
 
 // ...
-static const float dense_biases[64] = {
+static const float mnist_model_dense_biases[64] = {
    0.032142658,  0.153557003,  0.138524175, -0.014831746,  0.111740738, 
   -0.130211025, -0.079372473,  0.009518864,  0.027660912, -0.040668726, 
   -0.006027227,  0.214833617,  0.000430520,  0.070709758,  0.128204122, 
@@ -10067,7 +10067,7 @@ static const float dense_biases[64] = {
 };
 
 // ...
-static const float dense_1_weights[2048] = {
+static const float mnist_model_dense_1_weights[2048] = {
    0.024441618, -0.102461487, -0.247425541, -0.004475556,  0.326502115, 
    0.308793992,  0.103321142, -0.261024565,  0.213901564,  0.385791689, 
    0.084049582,  0.143164873,  0.282793283, -0.203739628,  0.265287310, 
@@ -10481,7 +10481,7 @@ static const float dense_1_weights[2048] = {
 };
 
 // ...
-static const float dense_1_biases[32] = {
+static const float mnist_model_dense_1_biases[32] = {
   -0.005686345,  0.053765170, -0.019605696,  0.074483074,  0.086426996, 
    0.112070754,  0.100374654,  0.107367739,  0.102610782,  0.091662169, 
    0.031073125,  0.042936828,  0.035470892, -0.074581109, -0.076225191, 
@@ -10492,7 +10492,7 @@ static const float dense_1_biases[32] = {
 };
 
 // ...
-static const float dense_2_weights[320] = {
+static const float mnist_model_dense_2_weights[320] = {
   -0.027850375, -0.059383087, -0.298658639, -0.565912306, -0.310604215, 
    0.098610967, -0.512555003,  0.331620365,  0.294835299, -0.285345852, 
    0.419587106, -0.706948519,  0.283434242, -0.141486079,  0.540608644, 
@@ -10560,51 +10560,66 @@ static const float dense_2_weights[320] = {
 };
 
 // ...
-static const float dense_2_biases[10] = {
+static const float mnist_model_dense_2_biases[10] = {
   -0.140750080, -0.032869145,  0.081209287, -0.182812765,  0.092414595, 
    0.119179450, -0.071890086, -0.013492036,  0.032975331,  0.030512901
 };
 
 // -----------------------------------------------------------------------------
-static float dense_output[64];
+static float mnist_model_dense_output[64];
 
 // ...
-const InfercatLayer dense = {
-  .weight = dense_weights,
-  .bias = dense_biases,
+const InfercatLayer_DENSE mnist_model_dense_ = {
+  .weight = mnist_model_dense_weights,
+  .bias = mnist_model_dense_biases,
   .input_size = 784,
   .output_size = 64,
-  .output_buffer = dense_output,
-  .type = InfercatLayerType_DENSE,
+  .output_buffer = mnist_model_dense_output,
   .activation = InfercatLayerActivation_RELU
 };
 
+// ...
+const InfercatLayer mnist_model_dense = {
+  .mem = (void*)(&mnist_model_dense_),
+  .type = InfercatLayerType_DENSE
+};
+
 // -----------------------------------------------------------------------------
-static float dense_1_output[32];
+static float mnist_model_dense_1_output[32];
 
 // ...
-const InfercatLayer dense_1 = {
-  .weight = dense_1_weights,
-  .bias = dense_1_biases,
+const InfercatLayer_DENSE mnist_model_dense_1_ = {
+  .weight = mnist_model_dense_1_weights,
+  .bias = mnist_model_dense_1_biases,
   .input_size = 64,
   .output_size = 32,
-  .output_buffer = dense_1_output,
-  .type = InfercatLayerType_DENSE,
+  .output_buffer = mnist_model_dense_1_output,
   .activation = InfercatLayerActivation_RELU
 };
 
+// ...
+const InfercatLayer mnist_model_dense_1 = {
+  .mem = (void*)(&mnist_model_dense_1_),
+  .type = InfercatLayerType_DENSE
+};
+
 // -----------------------------------------------------------------------------
-static float dense_2_output[10];
+static float mnist_model_dense_2_output[10];
 
 // ...
-const InfercatLayer dense_2 = {
-  .weight = dense_2_weights,
-  .bias = dense_2_biases,
+const InfercatLayer_DENSE mnist_model_dense_2_ = {
+  .weight = mnist_model_dense_2_weights,
+  .bias = mnist_model_dense_2_biases,
   .input_size = 32,
   .output_size = 10,
-  .output_buffer = dense_2_output,
-  .type = InfercatLayerType_DENSE,
+  .output_buffer = mnist_model_dense_2_output,
   .activation = InfercatLayerActivation_SOFTMAX
+};
+
+// ...
+const InfercatLayer mnist_model_dense_2 = {
+  .mem = (void*)(&mnist_model_dense_2_),
+  .type = InfercatLayerType_DENSE
 };
 
 // -----------------------------------------------------------------------------
@@ -10612,7 +10627,9 @@ const InfercatLayer dense_2 = {
 
 // ...
 const InfercatLayer* mnist_model[3] = {
-  &dense, &dense_1, &dense_2
+  &mnist_model_dense,
+  &mnist_model_dense_1,
+  &mnist_model_dense_2
 };
 
 #endif

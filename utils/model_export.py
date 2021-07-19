@@ -131,8 +131,11 @@ for ind, layer in enumerate(model.layers):
     print("Export supported: YES")
 
     # ...
-    printDenseWeights(fp, layer.name, "float", weights[0])
-    printDenseBiases(fp, layer.name, "float", weights[1])
+    name = "%s_%s" % (modelname, layer.name)
+
+    # ...
+    printDenseWeights(fp, name, "float", weights[0])
+    printDenseBiases(fp, name, "float", weights[1])
 
     # ...
     name_list.append(layer.name)
@@ -149,7 +152,7 @@ for ind, layer in enumerate(model.layers):
 for x in range(0, len(name_list)):
   
   # ...
-  name = name_list[x]
+  name = "%s_%s" % (modelname, name_list[x])
   type_ = type_list[x]
   shape = shape_list[x]
   activation = activation_list[x]
@@ -164,14 +167,20 @@ for x in range(0, len(name_list)):
   # ...
   fp.write("\r\n")
   fp.write("// ...\r\n")
-  fp.write("const InfercatLayer %s = {\r\n" % name)
+  fp.write("const InfercatLayer_%s %s_ = {\r\n" % (type_, name))
   fp.write("  .weight = %s_weights,\r\n" % name)  
   fp.write("  .bias = %s_biases,\r\n" % name)  
   fp.write("  .input_size = %d,\r\n" % shape[0])
   fp.write("  .output_size = %d,\r\n" % shape[1])
   fp.write("  .output_buffer = %s_output,\r\n" % name)
-  fp.write("  .type = InfercatLayerType_%s,\r\n" % type_)
   fp.write("  .activation = InfercatLayerActivation_%s\r\n" % activation)
+  fp.write("};\r\n")
+
+  fp.write("\r\n")
+  fp.write("// ...\r\n")
+  fp.write("const InfercatLayer %s = {\r\n" % name)
+  fp.write("  .mem = (void*)(&%s_),\r\n" % name)
+  fp.write("  .type = InfercatLayerType_%s\r\n" % type_)
   fp.write("};\r\n")
 
 # ...
@@ -190,11 +199,12 @@ fp.write("const InfercatLayer* %s[%d] = {\r\n  " %
 
 # ...
 for x in range(0, len(name_list)):
+  name = "%s_%s" % (modelname, name_list[x])
   if(x == (len(name_list) - 1)):
-    fp.write("&%s\r\n" % name_list[x])
+    fp.write("&%s\r\n" % name)
     fp.write("};\r\n")
   else:
-    fp.write("&%s, " % name_list[x])
+    fp.write("&%s,\r\n  " % name)
 
 # ...
 fp.write("\r\n")

@@ -34,7 +34,7 @@ static void infercat_softmax(float** input, int32_t len)
 }
 
 // ----------------------------------------------------------------------------
-static void infercat_dense(float* input, InfercatLayer* ptr)
+static void infercat_dense(float* input, InfercatLayer_DENSE* ptr)
 {
   float* weight = (float*)(ptr->weight);
   for(int32_t i=0;i<(ptr->output_size);i++)
@@ -93,8 +93,9 @@ void infercat_iterate(
   {
     if(ptr[i]->type == InfercatLayerType_DENSE)
     {
-      infercat_dense(layer_input, ptr[i]);
-      layer_input = ptr[i]->output_buffer;
+      InfercatLayer_DENSE* layer = (InfercatLayer_DENSE*)(ptr[i]->mem);
+      infercat_dense(layer_input, layer);
+      layer_input = layer->output_buffer;
     }
     else
     {
@@ -103,6 +104,7 @@ void infercat_iterate(
   }
 
   // ...
-  (*output) = ptr[layerCount - 1]->output_buffer;
-  (*output_size) = ptr[layerCount - 1]->output_size;
+  InfercatLayer_DENSE* layer = (InfercatLayer_DENSE*)(ptr[layerCount - 1]->mem);
+  (*output) = layer->output_buffer;
+  (*output_size) = layer->output_size;
 }
