@@ -36,7 +36,7 @@ class Dense:
 
   # ...
   def flatWeights(self):
-    data = self.weights.transpose()
+    data = self.weights
     data = np.reshape(data, data.shape[0] * data.shape[1])
     return data
 
