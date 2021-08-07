@@ -107,7 +107,7 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
   // ...
   const int32_t iDepth = ptr->in_depth;
   const int32_t oDepth = ptr->out_depth;
-  const int32_t kSize = ptr->kernel_width;
+  const int32_t kWidth = ptr->kernel_width;
 
   // Start with bias values in output channels
   float* out = ptr->output_buffer;
@@ -125,28 +125,28 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
   out = ptr->output_buffer;
 
   // Do the convolution
-  float* weight = ptr->weight;
-  for(int32_t kx=0;kx<kSize;kx++)
+  const float* weight = ptr->weight;
+  for(int32_t kx=0;kx<kWidth;kx++)
   {
-    for(int32_t ky=0;ky<kSize;ky++)
+    for(int32_t ky=0;ky<kWidth;ky++)
     {
       for(int32_t i=0;i<iDepth;i++)
       {
         for(int32_t j=0;j<oDepth;j++)
         {
           // TODO: Proper padding handling!
-          for(int32_t ix=0;ix<(ptr->out_width);ix++)
+          for(int32_t ox=0;ox<(ptr->out_width);ox++)
           {
-            for(int32_t iy=0;iy<(ptr->out_height);iy++)
+            for(int32_t oy=0;oy<(ptr->out_height);oy++)
             {
               const int32_t ind_o = (
-                (ix * oDepth * ptr->out_height) +
-                (iy * oDepth                  ) + j
+                (ox * oDepth * ptr->out_height) +
+                (oy * oDepth                  ) + j
               );
 
               const int32_t ind_i = (
-                (((ix * ptr->stride) + kx) * iDepth * ptr->in_height) +
-                (((iy * ptr->stride) + ky) * iDepth                 ) + i
+                (((ox * ptr->stride) + kx) * iDepth * ptr->in_height) +
+                (((oy * ptr->stride) + ky) * iDepth                 ) + i
               );
 
               out[ind_o] += (*weight) * input[ind_i];
@@ -160,11 +160,21 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
     }
   }
 
-  // Final activation
-  infercat_relu(
-    ptr->output_buffer, 
-    (ptr->out_width * ptr->out_height * ptr->out_depth)
-  );
+  // Final activation process
+  if(ptr->activation == InfercatLayerActivation_RELU)
+  {
+    infercat_relu(
+      ptr->output_buffer, 
+      (ptr->out_width * ptr->out_height * ptr->out_depth)
+    );
+  }
+  else if(ptr->activation == InfercatLayerActivation_SIGMOID)
+  {
+    infercat_sigmoid(
+      ptr->output_buffer, 
+      (ptr->out_width * ptr->out_height * ptr->out_depth)
+    );
+  }
 }
 
 // ----------------------------------------------------------------------------
