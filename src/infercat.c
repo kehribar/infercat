@@ -92,9 +92,11 @@ static void infercat_dense(float* input, InfercatLayer_DENSE* ptr)
 // ----------------------------------------------------------------------------
 static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
 {
+  // 
   // NOTE
   // ====
   // This is nowhere near optimised ...
+  // 
 
   // 
   // MEMORY LAYOUTS
@@ -178,6 +180,50 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
 }
 
 // ----------------------------------------------------------------------------
+static void infercat_maxpooling2d(float* input, InfercatLayer_MAXPOOLING2D* ptr)
+{
+  // 
+  // NOTE
+  // ====
+  // This is nowhere near optimised ...
+  // 
+
+  // Initialise output buffer with 'known low' values
+  for(int32_t i=0;i<(ptr->out_width * ptr->out_width * ptr->out_depth);i++)
+  {
+    ptr->output_buffer[i] = -1e39;
+  }
+
+  // ...
+  for(int32_t ix=0;ix<(ptr->in_width);ix++)
+  {
+    for(int32_t iy=0;iy<(ptr->in_height);iy++)
+    {
+      for(int32_t ch=0;ch<(ptr->in_depth);ch++)
+      {
+        // ...
+        const float pix = (*input);
+
+        // ...
+        const int32_t check_ind = (
+          ((ix / ptr->pool_width) * ptr->out_depth * ptr->out_width) + 
+          ((iy / ptr->pool_width) * ptr->out_depth                 ) + ch
+        );
+
+        // ...
+        if(pix > (ptr->output_buffer[check_ind]))
+        {
+          ptr->output_buffer[check_ind] = pix;
+        }
+
+        // ...
+        input++;
+      }
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
 void infercat_iterate(
   float* input,
   InfercatLayer** ptr,
@@ -206,7 +252,9 @@ void infercat_iterate(
     }
     else if(ptr[i]->type == InfercatLayerType_MAXPOOLING2D)
     {
-      // TODO!
+      InfercatLayer_MAXPOOLING2D* layer = (InfercatLayer_MAXPOOLING2D*)(ptr[i]->mem);
+      infercat_maxpooling2d(layer_input, layer);
+      layer_input = layer->output_buffer;
     }
     else
     {
