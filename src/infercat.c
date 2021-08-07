@@ -92,7 +92,80 @@ static void infercat_dense(float* input, InfercatLayer_DENSE* ptr)
 // ----------------------------------------------------------------------------
 static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
 {
-  // TODO ...
+  // NOTE
+  // ====
+  // This is nowhere near optimised ...
+
+  // 
+  // MEMORY LAYOUTS
+  // ==============
+  // Biases:  [out_ch]
+  // Images:  [ix, iy, in_ch]
+  // Kernels: [kx, ky, in_ch, out_ch]
+  // j
+
+  // ...
+  const int32_t iDepth = ptr->in_depth;
+  const int32_t oDepth = ptr->out_depth;
+  const int32_t kSize = ptr->kernel_width;
+
+  // Start with bias values in output channels
+  float* out = ptr->output_buffer;
+  const int32_t oSize = ptr->out_width * ptr->out_height;
+  for(int32_t i=0;i<oSize;i++)
+  {
+    for(int32_t j=0;j<oDepth;j++)
+    {
+      (*out) = ptr->bias[j];
+      out++;
+    }
+  }
+
+  // Reset output pointer
+  out = ptr->output_buffer;
+
+  // Do the convolution
+  float* weight = ptr->weight;
+  for(int32_t kx=0;kx<kSize;kx++)
+  {
+    for(int32_t ky=0;ky<kSize;ky++)
+    {
+      for(int32_t i=0;i<iDepth;i++)
+      {
+        for(int32_t j=0;j<oDepth;j++)
+        {
+          // Loop over the image to do convolution
+          // TODO: Proper stride and padding handling!
+          for(int32_t ix=0;ix<(ptr->out_width);ix++)
+          {
+            for(int32_t iy=0;iy<(ptr->out_height);iy++)
+            {
+              const int32_t ind_o = (
+                (ix * oDepth * ptr->out_height) +
+                (iy * oDepth                  ) + j
+              );j
+
+              const int32_t ind_i = (
+                ((ix + kx) * iDepth * ptr->in_height) +
+                ((iy + ky) * iDepth                 ) + i
+              );
+
+              out[ind_o] += (*weight) * input[ind_i];
+            }
+          }
+
+          // ...
+          weight++;
+        }
+      }
+    }
+  }
+
+  // Final activation
+  infercat_relu(
+    ptr->output_buffer, 
+    (ptr->out_width * ptr->out_height * ptr->out_depth)
+  );
 }
 
 // ----------------------------------------------------------------------------
