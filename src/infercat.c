@@ -143,7 +143,7 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
               const int32_t ind_o = (
                 (ix * oDepth * ptr->out_height) +
                 (iy * oDepth                  ) + j
-              );j
+              );
 
               const int32_t ind_i = (
                 ((ix + kx) * iDepth * ptr->in_height) +
