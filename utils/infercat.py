@@ -36,9 +36,7 @@ class Dense:
 
   # ...
   def flatWeights(self):
-    data = self.weights
-    data = np.reshape(data, data.shape[0] * data.shape[1])
-    return data
+    return self.weights.flatten()
 
 # -----------------------------------------------------------------------------
 class Conv2D:
@@ -73,27 +71,7 @@ class Conv2D:
 
   # ...
   def flatWeights(self):
-    
-    # ...
-    w = self.weights.shape[0] # width
-    h = self.weights.shape[1] # height
-    i = self.weights.shape[2] # input size
-    o = self.weights.shape[3] # output size
-
-    # ...
-    ind = 0
-    data = np.zeros(w * h * i * o)
-
-    # ...
-    for oo in range(0, o):
-      for ii in range(0, i):
-        for ww in range(0, w):
-          for hh in range(0, h):
-            data[ind] = self.weights[ww, hh, ii, oo]
-            ind += 1
-
-    # ...
-    return data
+    return self.weights.flatten()
 
 # -----------------------------------------------------------------------------
 class MaxPooling2D:
