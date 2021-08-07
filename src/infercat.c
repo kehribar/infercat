@@ -134,8 +134,7 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
       {
         for(int32_t j=0;j<oDepth;j++)
         {
-          // Loop over the image to do convolution
-          // TODO: Proper stride and padding handling!
+          // TODO: Proper padding handling!
           for(int32_t ix=0;ix<(ptr->out_width);ix++)
           {
             for(int32_t iy=0;iy<(ptr->out_height);iy++)
@@ -146,8 +145,8 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
               );
 
               const int32_t ind_i = (
-                ((ix + kx) * iDepth * ptr->in_height) +
-                ((iy + ky) * iDepth                 ) + i
+                (((ix * ptr->stride) + kx) * iDepth * ptr->in_height) +
+                (((iy * ptr->stride) + ky) * iDepth                 ) + i
               );
 
               out[ind_o] += (*weight) * input[ind_i];
