@@ -35,8 +35,10 @@ y_test = tf.keras.utils.to_categorical(y_test, 10)
 # ...
 model = tf.keras.models.Sequential([
   tf.keras.layers.InputLayer((28, 28, 1)),
-  tf.keras.layers.Conv2D(5, kernel_size=(3, 3), strides=(2, 2), activation="relu", use_bias=True),
-  tf.keras.layers.Conv2D(5, kernel_size=(3, 3), strides=(2, 2), activation="relu", use_bias=True),
+  tf.keras.layers.Conv2D(5, kernel_size=(3, 3), strides=(1, 1), activation="relu", use_bias=True),
+  tf.keras.layers.MaxPool2D(pool_size=(2, 2), strides=(2, 2)),
+  tf.keras.layers.Conv2D(3, kernel_size=(3, 3), strides=(1, 1), activation="relu", use_bias=True),
+  tf.keras.layers.Conv2D(3, kernel_size=(3, 3), strides=(2, 2), activation="relu", use_bias=True),
   tf.keras.layers.Flatten(),
   tf.keras.layers.Dense(10, activation="softmax"),
 ])
@@ -53,7 +55,7 @@ print("")
 model.fit(
   x_train, y_train, 
   batch_size=512, 
-  epochs=2
+  epochs=8
 )
 
 # ...
