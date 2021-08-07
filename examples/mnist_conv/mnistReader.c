@@ -28,6 +28,7 @@ int32_t mnistReader_init(
 )
 {
   // ...
+  int32_t rv;
   uint8_t ch[4];
   uint32_t value;
 
@@ -36,7 +37,7 @@ int32_t mnistReader_init(
   fp_label = fopen(file_path_labels, "r");
 
   // ...
-  fread(&ch, sizeof(uint8_t), 4, fp_label);
+  rv = fread(&ch, sizeof(uint8_t), 4, fp_label);
   value = make32b(ch);
   if(value != 0x00000801)
   {
@@ -45,7 +46,7 @@ int32_t mnistReader_init(
   }
 
   // ...
-  fread(&ch, sizeof(uint8_t), 4, fp_img);
+  rv = fread(&ch, sizeof(uint8_t), 4, fp_img);
   value = make32b(ch);
   if(value != 0x00000803)
   {
@@ -55,13 +56,13 @@ int32_t mnistReader_init(
   }
 
   // ...
-  fread(&ch, sizeof(uint8_t), 4, fp_label);
+  rv = fread(&ch, sizeof(uint8_t), 4, fp_label);
   m_itemCount_label = make32b(ch);
   printf("\r\n");
   printf("Label count: %d\r\n", m_itemCount_label);
 
   // ...
-  fread(&ch, sizeof(uint8_t), 4, fp_img);
+  rv = fread(&ch, sizeof(uint8_t), 4, fp_img);
   m_itemCount_img = make32b(ch);
   printf("\r\n");
   printf("Image count: %d\r\n", m_itemCount_img);
@@ -87,13 +88,16 @@ int32_t mnistReader_getByIndex(int32_t index, uint8_t* image, uint8_t* label)
     return -1;
   }
 
+  // ...
+  int32_t rv;
+
   // Read label
   fseek(fp_label, 8 + index, SEEK_SET);
-  fread(label, sizeof(uint8_t), 1, fp_label);
+  rv = fread(label, sizeof(uint8_t), 1, fp_label);
 
   // Read image
   fseek(fp_img, 16 + (index * 784), SEEK_SET);
-  fread(image, sizeof(uint8_t), 784, fp_img);
+  rv = fread(image, sizeof(uint8_t), 784, fp_img);
 
   // ...
   return 0;
