@@ -102,7 +102,7 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
   // Biases:  [out_ch]
   // Images:  [ix, iy, in_ch]
   // Kernels: [kx, ky, in_ch, out_ch]
-  // j
+  // 
 
   // ...
   const int32_t iDepth = ptr->in_depth;
