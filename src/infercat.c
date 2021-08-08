@@ -9,6 +9,18 @@
 #include <math.h>
 
 // ----------------------------------------------------------------------------
+inline float infercat_relu_single(float input)
+{
+  return input < 0 ? 0 : input;
+}
+
+// ----------------------------------------------------------------------------
+inline float infercat_sigmoid_single(float input)
+{
+  return 1.0 / (1.0 + expf(-input));  
+}
+
+// ----------------------------------------------------------------------------
 static float infercat_relu(float* input, const int32_t len)
 {
   for(int32_t i=0;i<len;i++)
@@ -241,80 +253,68 @@ static void infercat_gru(float* input, InfercatLayer_GRU* ptr)
   const int32_t N = ptr->out_size;
   const int32_t stride = 3 * ptr->out_size;
 
-  // Update gate
+  // Update gate, reset gate
   for(int32_t i=0;i<N;i++)
   {
-    float sum = ptr->bias[i];
+    // ...
+    float zsum = ptr->bias[i];
+    float rsum = ptr->bias[N + i];
+
+    // ...
     for(int32_t j=0;j<M;j++)
     {
-      sum += (ptr->weight[(j * stride) + i]) * input[j];
+      zsum += (ptr->weight[(j * stride) + i    ]) * input[j];
+      rsum += (ptr->weight[(j * stride) + i + N]) * input[j];
     }
+
+    // ...
     for(int32_t j=0;j<N;j++)
     {
-      sum += (ptr->recurrentWeight[(j * stride) + i]) * (ptr->output_buffer[j]);      
+      zsum += (ptr->recurrentWeight[(j * stride) + i    ]) * (ptr->output_buffer[j]);      
+      rsum += (ptr->recurrentWeight[(j * stride) + i + N]) * (ptr->output_buffer[j]);      
     }
-    z[i] = sum;
+
+    // ...
+    z[i] = zsum;
+    r[i] = rsum;
   }
   
   // ...
   if(ptr->recurrentActivation == InfercatLayerActivation_SIGMOID)
   {
     infercat_sigmoid(z, N);    
-  }
-
-  // Reset gate
-  for(int32_t i=0;i<N;i++)
-  {
-    float sum = ptr->bias[N + i];
-    for(int32_t j=0;j<M;j++)
-    {
-      sum += (ptr->weight[N + (j * stride) + i]) * input[j];
-    }
-    for(int32_t j=0;j<N;j++)
-    {
-      sum += (ptr->recurrentWeight[N + (j * stride) + i]) * (ptr->output_buffer[j]);      
-    }
-    r[i] = sum;
-  }
-
-  // ...
-  if(ptr->recurrentActivation == InfercatLayerActivation_SIGMOID)
-  {
-    infercat_sigmoid(r, N);
+    infercat_sigmoid(r, N);    
   }
 
   // Output gate
   for(int32_t i=0;i<N;i++)
   {
-    float sum = ptr->bias[(2 * N) + i];
+    float hsum = ptr->bias[(2 * N) + i];
     for(int32_t j=0;j<M;j++)
     {
-      sum += (ptr->weight[(2 * N) + (j * stride) + i]) * input[j];
+      hsum += (ptr->weight[(2 * N) + (j * stride) + i]) * input[j];
     }
     for(int32_t j=0;j<N;j++)
     {
-      sum += (ptr->recurrentWeight[(2 * N) + (j * stride) + i]) * (ptr->output_buffer[j]) * r[j];
+      hsum += (ptr->recurrentWeight[(2 * N) + (j * stride) + i]) * (ptr->output_buffer[j]) * r[j];
     }
 
     // ...
     if(ptr->activation == InfercatLayerActivation_SIGMOID)
     {
-      infercat_sigmoid(&sum, 1);
+      hsum = infercat_sigmoid_single(hsum);
     }
     else if(ptr->activation == InfercatLayerActivation_RELU)
     {
-      infercat_relu(&sum, 1);      
+      hsum = infercat_relu_single(hsum);
     }
 
     // ...
-    h[i] = (z[i] * (ptr->output_buffer[i])) + ((1.0 - z[i]) * sum);
+    h[i] = (z[i] * (ptr->output_buffer[i])) + ((1.0 - z[i]) * hsum);
   }
 
   // ...
-  for(int32_t i=0;i<N;i++)
-  {
-    ptr->output_buffer[i] = h[i];
-  }
+  memcpy(ptr->output_buffer, h, sizeof(float) * ptr->out_size);
 }
 
 // ----------------------------------------------------------------------------
