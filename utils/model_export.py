@@ -81,6 +81,25 @@ def generateCustomLayers(model):
       pass
 
     # ...
+    elif(isinstance(layer, tf.keras.layers.GRU)):
+
+      # ...
+      gru_layer = infercat.GRU(
+        layer.input_shape[1:], 
+        layer.output_shape[1:], 
+        layer.get_weights()[0], 
+        layer.get_weights()[1], 
+        layer.get_weights()[2], 
+        layer.return_sequences,
+        tf_getLayerActivationName(layer), 
+        tf_getRecurrentActivationName(layer), 
+        "%s_%s" % (modelname, layer.name)
+      )
+
+      # ...
+      layer_list.append(gru_layer)
+
+    # ...
     else:
       print("Export supported: NO")
 

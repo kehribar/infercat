@@ -12,7 +12,8 @@
 typedef enum{
   InfercatLayerType_DENSE = 0,
   InfercatLayerType_CONV2D = 1,
-  InfercatLayerType_MAXPOOLING2D = 2
+  InfercatLayerType_MAXPOOLING2D = 2,
+  InfercatLayerType_GRU = 3
 }InfercatLayerType;
 
 // ----------------------------------------------------------------------------
@@ -20,7 +21,7 @@ typedef enum{
   InfercatLayerActivation_RELU = 0,
   InfercatLayerActivation_SOFTMAX = 1,
   InfercatLayerActivation_SIGMOID = 2,
-  InfercatLayerActivation_LINEAR = 3
+  InfercatLayerActivation_TANH = 3
 }InfercatLayerActivation;
 
 // ----------------------------------------------------------------------------
@@ -67,6 +68,21 @@ typedef struct{
   const int32_t pool_width;
   float* output_buffer;
 }InfercatLayer_MAXPOOLING2D;
+
+// ----------------------------------------------------------------------------
+typedef struct{
+  const float* bias;
+  const float* weight;
+  const float* recurrentWeight;
+  const int32_t in_size;
+  const int32_t out_size;
+  const InfercatLayerActivation activation;
+  const InfercatLayerActivation recurrentActivation;
+  float* output_buffer;
+}InfercatLayer_GRU;
+
+// ----------------------------------------------------------------------------
+void infercat_rnnLayersResetMemory(InfercatLayer** ptr, int32_t layerCount);
 
 // ----------------------------------------------------------------------------
 void infercat_iterate(

@@ -5,6 +5,7 @@
 #include "infercat.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <math.h>
 
 // ----------------------------------------------------------------------------
@@ -224,6 +225,112 @@ static void infercat_maxpooling2d(float* input, InfercatLayer_MAXPOOLING2D* ptr)
 }
 
 // ----------------------------------------------------------------------------
+// Influenced from rnnoise project
+static void infercat_gru(float* input, InfercatLayer_GRU* ptr)
+{
+  // ...
+  #define MAX_NEURONS 256
+
+  // ...
+  float z[MAX_NEURONS];
+  float r[MAX_NEURONS];
+  float h[MAX_NEURONS];
+
+  // ...
+  const int32_t M = ptr->in_size;
+  const int32_t N = ptr->out_size;
+  const int32_t stride = 3 * ptr->out_size;
+
+  // Update gate
+  for(int32_t i=0;i<N;i++)
+  {
+    float sum = ptr->bias[i];
+    for(int32_t j=0;j<M;j++)
+    {
+      sum += (ptr->weight[(j * stride) + i]) * input[j];
+    }
+    for(int32_t j=0;j<N;j++)
+    {
+      sum += (ptr->recurrentWeight[(j * stride) + i]) * (ptr->output_buffer[j]);      
+    }
+    z[i] = sum;
+  }
+  
+  // ...
+  if(ptr->recurrentActivation == InfercatLayerActivation_SIGMOID)
+  {
+    infercat_sigmoid(z, N);    
+  }
+
+  // Reset gate
+  for(int32_t i=0;i<N;i++)
+  {
+    float sum = ptr->bias[N + i];
+    for(int32_t j=0;j<M;j++)
+    {
+      sum += (ptr->weight[N + (j * stride) + i]) * input[j];
+    }
+    for(int32_t j=0;j<N;j++)
+    {
+      sum += (ptr->recurrentWeight[N + (j * stride) + i]) * (ptr->output_buffer[j]);      
+    }
+    r[i] = sum;
+  }
+
+  // ...
+  if(ptr->recurrentActivation == InfercatLayerActivation_SIGMOID)
+  {
+    infercat_sigmoid(r, N);
+  }
+
+  // Output gate
+  for(int32_t i=0;i<N;i++)
+  {
+    float sum = ptr->bias[(2 * N) + i];
+    for(int32_t j=0;j<M;j++)
+    {
+      sum += (ptr->weight[(2 * N) + (j * stride) + i]) * input[j];
+    }
+    for(int32_t j=0;j<N;j++)
+    {
+      sum += (ptr->recurrentWeight[(2 * N) + (j * stride) + i]) * (ptr->output_buffer[j]) * r[j];
+    }
+
+    // ...
+    if(ptr->activation == InfercatLayerActivation_SIGMOID)
+    {
+      infercat_sigmoid(&sum, 1);
+    }
+    else if(ptr->activation == InfercatLayerActivation_RELU)
+    {
+      infercat_relu(&sum, 1);      
+    }
+
+    // ...
+    h[i] = (z[i] * (ptr->output_buffer[i])) + ((1.0 - z[i]) * sum);
+  }
+
+  // ...
+  for(int32_t i=0;i<N;i++)
+  {
+    ptr->output_buffer[i] = h[i];
+  }
+}
+
+// ----------------------------------------------------------------------------
+void infercat_rnnLayersResetMemory(InfercatLayer** ptr, int32_t layerCount)
+{
+  for(int32_t i=0;i<layerCount;i++)
+  {
+    if(ptr[i]->type == InfercatLayerType_GRU)
+    {
+      InfercatLayer_GRU* layer = (InfercatLayer_GRU*)(ptr[i]->mem);
+      memset(layer->output_buffer, 0, sizeof(float) * layer->out_size);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------------
 void infercat_iterate(
   float* input,
   InfercatLayer** ptr,
@@ -254,6 +361,12 @@ void infercat_iterate(
     {
       InfercatLayer_MAXPOOLING2D* layer = (InfercatLayer_MAXPOOLING2D*)(ptr[i]->mem);
       infercat_maxpooling2d(layer_input, layer);
+      layer_input = layer->output_buffer;
+    }
+    else if(ptr[i]->type == InfercatLayerType_GRU)
+    {
+      InfercatLayer_GRU* layer = (InfercatLayer_GRU*)(ptr[i]->mem);
+      infercat_gru(layer_input, layer);
       layer_input = layer->output_buffer;
     }
     else

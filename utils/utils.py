@@ -46,11 +46,12 @@ def printArrayContents(fp, name, data):
         fp.write("\r\n  ")
 
 # -----------------------------------------------------------------------------
-def printOutputBuffer(fp, name, length):
-  fp.write("\r\n")
-  printSeperator(fp)
-  fp.write("//\r\n");
-  printSeperator(fp)
+def printOutputBuffer(fp, name, length, putSeperator=True):
+  if(putSeperator):
+    fp.write("\r\n")
+    printSeperator(fp)
+    fp.write("//\r\n");
+    printSeperator(fp)
   fp.write("\r\n")
   fp.write("// ...\r\n");
   fp.write("float %s[%d];\r\n  " % (name, length))
@@ -58,7 +59,13 @@ def printOutputBuffer(fp, name, length):
 # -----------------------------------------------------------------------------
 # Taken from rnnoise project.
 def tf_getLayerActivationName(layer):
-  return re.search('function (.*) at', str(layer.activation)).group(1).upper()
+  fn = layer.activation
+  return re.search('function (.*) at', str(fn)).group(1).upper()
+
+# -----------------------------------------------------------------------------
+def tf_getRecurrentActivationName(layer):
+  fn = layer.recurrent_activation
+  return re.search('function (.*) at', str(fn)).group(1).upper()
 
 # -----------------------------------------------------------------------------
 def exportCustomLayersToFile(fp, modelname, layer_list):
@@ -168,6 +175,41 @@ def exportCustomLayersToFile(fp, modelname, layer_list):
       fp.write("const InfercatLayer %s = {\r\n" % layer.name)
       fp.write("  .mem = (void*)(&%s_),\r\n" % layer.name)
       fp.write("  .type = InfercatLayerType_MAXPOOLING2D\r\n")
+      fp.write("};\r\n")
+
+    # -------------------------------------------------------------------------
+    elif(isinstance(layer, infercat.GRU)):
+
+      # ...
+      sh = layer.output_shape
+      outputBufferSize = sh[0]
+      printOutputBuffer(fp, layer.name + "_output", outputBufferSize)
+
+      # ...
+      printArrayContents(fp, layer.name + "_weights", layer.flatWeights())
+      printArrayContents(fp, layer.name + "_biases", layer.flatBiases())
+      printArrayContents(fp, layer.name + "_recurrentWeights", layer.flatRecurrentWeights())
+
+      # ...
+      fp.write("\r\n")
+      fp.write("// ...\r\n")
+      fp.write("const InfercatLayer_GRU %s_ = {\r\n" % layer.name)
+      fp.write("  .weight = %s_weights,\r\n" % layer.name)  
+      fp.write("  .recurrentWeight = %s_recurrentWeights,\r\n" % layer.name)  
+      fp.write("  .bias = %s_biases,\r\n" % layer.name)  
+      fp.write("  .in_size = %d,\r\n" % layer.input_shape[0])
+      fp.write("  .out_size = %d,\r\n" % layer.output_shape[0])
+      fp.write("  .output_buffer = %s_output,\r\n" % layer.name)
+      fp.write("  .activation = InfercatLayerActivation_%s\r\n," % layer.activation)
+      fp.write("  .recurrentActivation = InfercatLayerActivation_%s\r\n" % layer.recurrentActivation)
+      fp.write("};\r\n")
+
+      # ...
+      fp.write("\r\n")
+      fp.write("// ...\r\n")
+      fp.write("const InfercatLayer %s = {\r\n" % layer.name)
+      fp.write("  .mem = (void*)(&%s_),\r\n" % layer.name)
+      fp.write("  .type = InfercatLayerType_GRU\r\n")
       fp.write("};\r\n")
 
   # ...

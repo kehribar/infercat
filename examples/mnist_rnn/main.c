@@ -3,6 +3,7 @@
 //
 // -----------------------------------------------------------------------------
 #include <stdio.h>
+#include <string.h>
 #include "infercat.h"
 #include "mnistReader.h"
 #include "mnist_model.h"
@@ -42,15 +43,23 @@ int main(int argc, char const *argv[])
       img[j] = (float)(img_raw[j]) / 255.0;
     }
 
+    // ...
+    infercat_rnnLayersResetMemory(
+      (InfercatLayer**)(mnist_model), mnist_model_LAYERCOUNT
+    );
+    
     // Inference happens here!
     float* output;
     int32_t output_size;
-    infercat_iterate(
-      img,
-      (InfercatLayer**)(mnist_model),
-      mnist_model_LAYERCOUNT,
-      &output, &output_size
-    );
+    for(int32_t i=0;i<28;i++)
+    {
+      infercat_iterate(
+        &(img[i * 28]),
+        (InfercatLayer**)(mnist_model),
+        mnist_model_LAYERCOUNT,
+        &output, &output_size
+      );
+    }
 
     // ...
     printf("\n");

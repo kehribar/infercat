@@ -100,3 +100,49 @@ class MaxPooling2D:
       print("Output shape:", output_shape)
       print("Stride:", stride)
       print("Pool shape:", pool_shape)
+
+# -----------------------------------------------------------------------------
+class GRU:
+
+  # ...
+  def __init__(
+    self, input_shape, output_shape, 
+    weights, recurrent_weights, biases, 
+    return_sequences, activation, 
+    recurrentActivation, name
+  ):
+
+    # ...
+    self.input_shape = input_shape
+    self.output_shape = output_shape
+    self.weights = weights
+    self.recurrent_weights = recurrent_weights
+    self.biases = biases
+    self.name = name
+    self.return_sequences = return_sequences
+    self.activation = activation
+    self.recurrentActivation = recurrentActivation
+
+    # ...
+    if DEBUG:
+      print("Name:", name)
+      print("Input shape:", input_shape)
+      print("Output shape:", output_shape)
+      print("Weights:", weights.shape)
+      print("Recurrent Weights:", recurrent_weights.shape)
+      print("Biases:", biases.shape)
+      print("Activation:", activation)
+      print("Recurrent activation:", recurrentActivation)
+      print("Return sequences:", return_sequences)
+
+  # ...
+  def flatWeights(self):
+    return self.weights.flatten()
+
+  # ...
+  def flatRecurrentWeights(self):
+    return self.recurrent_weights.flatten()
+
+  # ...
+  def flatBiases(self):
+    return self.biases.flatten()
