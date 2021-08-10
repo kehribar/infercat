@@ -4,7 +4,7 @@
 # -----------------------------------------------------------------------------
 
 all:
-	gcc main.c ../../src/infercat.c mnistReader.c -I ../../src -o main -lm -O3
+	gcc main.c ../../src/infercat.c mnistReader.c -I ../../src -o main -lm -O3 -fsingle-precision-constant
 
 clean:
 	rm main
