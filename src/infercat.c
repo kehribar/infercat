@@ -241,7 +241,7 @@ static void infercat_maxpooling2d(float* input, InfercatLayer_MAXPOOLING2D* ptr)
 static void infercat_gru(float* input, InfercatLayer_GRU* ptr)
 {
   // ...
-  #define MAX_NEURONS 256
+  #define MAX_NEURONS 128
 
   // ...
   float z[MAX_NEURONS];
@@ -253,25 +253,49 @@ static void infercat_gru(float* input, InfercatLayer_GRU* ptr)
   const int32_t N = ptr->out_size;
   const int32_t stride = 3 * ptr->out_size;
 
+  // ...
+  if(N > MAX_NEURONS)
+  {
+    return;
+  }
+
   // Update gate, reset gate
   for(int32_t i=0;i<N;i++)
   {
     // ...
-    float zsum = ptr->bias[i];
-    float rsum = ptr->bias[N + i];
+    float zsum = ptr->bias[i    ];
+    float rsum = ptr->bias[i + N];
 
     // ...
+    const float* inp = input;
+    const float* zw = &(ptr->weight[i    ]);
+    const float* rw = &(ptr->weight[i + N]);
     for(int32_t j=0;j<M;j++)
     {
-      zsum += (ptr->weight[(j * stride) + i    ]) * input[j];
-      rsum += (ptr->weight[(j * stride) + i + N]) * input[j];
+      // ...
+      zsum += (*zw) * (*inp);
+      rsum += (*rw) * (*inp);
+
+      // ...
+      inp += 1;
+      zw += stride;
+      rw += stride;
     }
 
     // ...
+    const float* outp = ptr->output_buffer;;
+    const float* zrw = &(ptr->recurrentWeight[i    ]);
+    const float* rrw = &(ptr->recurrentWeight[i + N]);
     for(int32_t j=0;j<N;j++)
     {
-      zsum += (ptr->recurrentWeight[(j * stride) + i    ]) * (ptr->output_buffer[j]);      
-      rsum += (ptr->recurrentWeight[(j * stride) + i + N]) * (ptr->output_buffer[j]);      
+      // ...
+      zsum += (*zrw) * (*outp);
+      rsum += (*rrw) * (*outp);
+
+      // ...
+      outp += 1;
+      zrw += stride;
+      rrw += stride;
     }
 
     // ...
@@ -285,18 +309,44 @@ static void infercat_gru(float* input, InfercatLayer_GRU* ptr)
     infercat_sigmoid(z, N);    
     infercat_sigmoid(r, N);    
   }
+  else
+  {
+    // ... ?
+    return;
+  }
 
   // Output gate
   for(int32_t i=0;i<N;i++)
   {
-    float hsum = ptr->bias[(2 * N) + i];
+    // ...
+    float hsum = ptr->bias[i + N + N];
+
+    // ...
+    const float* inp = input;
+    const float* hw = &(ptr->weight[i + N + N]);
     for(int32_t j=0;j<M;j++)
     {
-      hsum += (ptr->weight[(2 * N) + (j * stride) + i]) * input[j];
+      // ...
+      hsum += (*hw) * (*inp);
+      
+      // ...
+      inp += 1;
+      hw += stride;
     }
+
+    // ...
+    const float* rp = r;
+    const float* outp = ptr->output_buffer;
+    const float* hrw = &(ptr->recurrentWeight[i + N + N]);
     for(int32_t j=0;j<N;j++)
     {
-      hsum += (ptr->recurrentWeight[(2 * N) + (j * stride) + i]) * (ptr->output_buffer[j]) * r[j];
+      // ...
+      hsum += (*hrw) * (*outp) * (*rp);
+
+      // ...
+      rp += 1;
+      outp += 1;
+      hrw += stride;
     }
 
     // ...
@@ -308,9 +358,13 @@ static void infercat_gru(float* input, InfercatLayer_GRU* ptr)
     {
       hsum = infercat_relu_single(hsum);
     }
+    else
+    {
+      return;
+    }
 
     // ...
-    h[i] = (z[i] * (ptr->output_buffer[i])) + ((1.0 - z[i]) * hsum);
+    h[i] = hsum + (z[i] * (ptr->output_buffer[i] - hsum));
   }
 
   // ...
