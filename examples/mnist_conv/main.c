@@ -68,7 +68,7 @@ int main(int argc, char const *argv[])
     printf("\n");
     printf("Network Output\n");
     printf("--------------\n");
-    float maxValue = -1e99;
+    float maxValue = -1e19;
     int32_t output_maxIndex = -1;
     for(int32_t j=0;j<output_size;j++)
     {
