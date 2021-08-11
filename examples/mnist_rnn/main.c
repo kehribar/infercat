@@ -9,6 +9,15 @@
 #include "mnist_model.h"
 
 // ...
+uint64_t microseconds()
+{
+  #include <sys/time.h>
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  return (now.tv_sec * 1000000) + now.tv_usec;
+}
+
+// ...
 const int32_t data_count = 10000;
 const char* labels = "./dataset/t10k-labels-idx1-ubyte";
 const char* images = "./dataset/t10k-images-idx3-ubyte";
@@ -51,6 +60,7 @@ int main(int argc, char const *argv[])
     // Inference happens here!
     float* output;
     int32_t output_size;
+    uint64_t start = microseconds();
     for(int32_t i=0;i<28;i++)
     {
       infercat_iterate(
@@ -60,6 +70,9 @@ int main(int argc, char const *argv[])
         &output, &output_size
       );
     }
+    uint64_t delta = microseconds() - start;
+    static uint64_t delta_sum = 0;
+    delta_sum += delta;
 
     // ...
     printf("\n");
@@ -111,6 +124,7 @@ int main(int argc, char const *argv[])
     printf("Error rate: %%%.3f (%d/%d)\n",
       (100.0 * error_rate), error_count, total_count
     );
+    printf("Delta: %ld usec, Avg: %ld usec\r\n", delta, delta_sum / (i + 1));
   }
 
   // ...
