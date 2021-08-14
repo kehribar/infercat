@@ -104,7 +104,7 @@ static inline float infercat_sigmoid_single(float input)
 }
 
 // ----------------------------------------------------------------------------
-static float infercat_relu(float* input, const int32_t len)
+static void infercat_relu(float* input, const int32_t len)
 {
   for(int32_t i=0;i<len;i++)
   {
@@ -114,7 +114,7 @@ static float infercat_relu(float* input, const int32_t len)
 }
 
 // ----------------------------------------------------------------------------
-static float infercat_sigmoid(float* input, const int32_t len)
+static void infercat_sigmoid(float* input, const int32_t len)
 {
   for(int32_t i=0;i<len;i++)
   {
@@ -188,19 +188,19 @@ static void infercat_dense(float* input, InfercatLayer_DENSE* ptr)
 // ----------------------------------------------------------------------------
 static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
 {
-  // 
+  //
   // NOTE
   // ====
   // This is nowhere near optimised ...
-  // 
+  //
 
-  // 
+  //
   // MEMORY LAYOUTS
   // ==============
   // Biases:  [out_ch]
   // Images:  [ix, iy, in_ch]
   // Kernels: [kx, ky, in_ch, out_ch]
-  // 
+  //
 
   // ...
   const int32_t iDepth = ptr->in_depth;
@@ -248,10 +248,9 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
             float* op = &(out[ind_o]);
             const float* wp = weight;
             const float iv = input[ind_i];
-
             for(int32_t j=0;j<oDepth;j++)
             {
-              (*op++) += (*wp++) * iv;             
+              (*op++) += (*wp++) * iv;
             }
           }
         }
@@ -266,14 +265,14 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
   if(ptr->activation == InfercatLayerActivation_RELU)
   {
     infercat_relu(
-      ptr->output_buffer, 
+      ptr->output_buffer,
       (ptr->out_width * ptr->out_height * ptr->out_depth)
     );
   }
   else if(ptr->activation == InfercatLayerActivation_SIGMOID)
   {
     infercat_sigmoid(
-      ptr->output_buffer, 
+      ptr->output_buffer,
       (ptr->out_width * ptr->out_height * ptr->out_depth)
     );
   }
@@ -282,11 +281,11 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
 // ----------------------------------------------------------------------------
 static void infercat_maxpooling2d(float* input, InfercatLayer_MAXPOOLING2D* ptr)
 {
-  // 
+  //
   // NOTE
   // ====
   // This is nowhere near optimised ...
-  // 
+  //
 
   // Initialise output buffer with 'known low' values
   for(int32_t i=0;i<(ptr->out_width * ptr->out_width * ptr->out_depth);i++)
@@ -306,7 +305,7 @@ static void infercat_maxpooling2d(float* input, InfercatLayer_MAXPOOLING2D* ptr)
 
         // ...
         const int32_t check_ind = (
-          ((ix / ptr->pool_width) * ptr->out_depth * ptr->out_width) + 
+          ((ix / ptr->pool_width) * ptr->out_depth * ptr->out_width) +
           ((iy / ptr->pool_width) * ptr->out_depth                 ) + ch
         );
 
@@ -389,12 +388,12 @@ static void infercat_gru(float* input, InfercatLayer_GRU* ptr)
     z[i] = zsum;
     r[i] = rsum;
   }
-  
+
   // ...
   if(ptr->recurrentActivation == InfercatLayerActivation_SIGMOID)
   {
-    infercat_sigmoid(z, N);    
-    infercat_sigmoid(r, N);    
+    infercat_sigmoid(z, N);
+    infercat_sigmoid(r, N);
   }
   else
   {
@@ -415,7 +414,7 @@ static void infercat_gru(float* input, InfercatLayer_GRU* ptr)
     {
       // ...
       hsum += (*hw) * (*inp);
-      
+
       // ...
       inp += 1;
       hw += stride;
