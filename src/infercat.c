@@ -230,30 +230,34 @@ static void infercat_conv2d(float* input, InfercatLayer_CONV2D* ptr)
     {
       for(int32_t i=0;i<iDepth;i++)
       {
-        for(int32_t j=0;j<oDepth;j++)
+        // TODO: Proper padding handling!
+        for(int32_t ox=0;ox<(ptr->out_width);ox++)
         {
-          // TODO: Proper padding handling!
-          for(int32_t ox=0;ox<(ptr->out_width);ox++)
+          for(int32_t oy=0;oy<(ptr->out_height);oy++)
           {
-            for(int32_t oy=0;oy<(ptr->out_height);oy++)
+            const int32_t ind_o = (
+              (ox * oDepth * ptr->out_height) +
+              (oy * oDepth                  )
+            );
+
+            const int32_t ind_i = (
+              (((ox * ptr->stride) + kx) * iDepth * ptr->in_height) +
+              (((oy * ptr->stride) + ky) * iDepth                 ) + i
+            );
+
+            float* op = &(out[ind_o]);
+            const float* wp = weight;
+            const float iv = input[ind_i];
+
+            for(int32_t j=0;j<oDepth;j++)
             {
-              const int32_t ind_o = (
-                (ox * oDepth * ptr->out_height) +
-                (oy * oDepth                  ) + j
-              );
-
-              const int32_t ind_i = (
-                (((ox * ptr->stride) + kx) * iDepth * ptr->in_height) +
-                (((oy * ptr->stride) + ky) * iDepth                 ) + i
-              );
-
-              out[ind_o] += (*weight) * input[ind_i];
+              (*op++) += (*wp++) * iv;             
             }
           }
-
-          // ...
-          weight++;
         }
+
+        // ...
+        weight += oDepth;
       }
     }
   }
