@@ -1,7 +1,7 @@
 
 # Infercat
 
-Proof of concept machine learning inference library for C with no extra dependency. 
+**Proof of concept** machine learning inference library for C with no extra dependency. 
 
 Convert your tensorflow model with supported layers and activations into a C header and thats it. If you want to use other training frameworks, you should create a new export script based on current one.
 
