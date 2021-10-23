@@ -72,6 +72,6 @@ As you can see we can achive the same **accuracy** as tensorflow test run with m
 
 # TODO
 
-* Maybe `RNN` layers?
 * Quantization? 8bit, 16bit?
-* Speed up kernel computations by using hardware multiply accumulate intrinsics and still maintain readibility of the code.
+* Speed up kernel computations by using hardware multiply accumulate intrinsics and still maintain readibility of the code?
+* Rearrange weights and data structures to better suite hardware capabilities when computing?
