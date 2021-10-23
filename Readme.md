@@ -16,6 +16,7 @@ Convert your tensorflow model with supported layers and activations into a C hea
 * There are no dynamic memory calls in the library. All weights, biases and intermediate buffers of the layers are allocated at the compile time. 
 * Only fully sequential model structures are supported. 
 * For simplicity sake, current library only uses float weights and there are no hardware specific acceleration code in the kernels.
+* Probably a bit slow execution times but this is not the priority at the moment.
 
 # Usage
 
