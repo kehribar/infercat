@@ -12,8 +12,9 @@ Convert your tensorflow model with supported layers and activations into a C hea
 
 ## Details
 
-* Currently, this library only supports `DENSE` layers with `RELU`, `SIGMOID` and `SOFTMAX` activations.
-* There are no dynamic memory calls in the library. All weights, biases and intermediate buffers of the layers allocated at the compile time. 
+* Currently, this library only supports `DENSE`, `CONV2D`, `MAXPOOL2D` and `GRU` layers with `RELU`, `TANH`, `SIGMOID` and `SOFTMAX` activations.
+* There are no dynamic memory calls in the library. All weights, biases and intermediate buffers of the layers are allocated at the compile time. 
+* Only fully sequential model structures are supported. 
 * For simplicity sake, current library only uses float weights and there are no hardware specific acceleration code in the kernels.
 
 # Usage
